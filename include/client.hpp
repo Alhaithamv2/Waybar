@@ -38,6 +38,7 @@ class Client {
   void bindInterfaces();
   void handleOutput(struct waybar_output &output);
   auto setupCss(const std::string &css_file) -> void;
+  void loadCss(const std::string &style_path);
   struct waybar_output &getOutput(void *);
   std::vector<Json::Value> getOutputConfigs(struct waybar_output &output);
 

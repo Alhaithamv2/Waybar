@@ -213,11 +213,21 @@ void waybar::Client::bindInterfaces() {
       sigc::mem_fun(*this, &Client::handleMonitorRemoved));
 }
 
+void waybar::Client::loadCss(const std::string &style_path) {
+  auto css_file = getStyle(style_path);
+  setupCss(css_file);
+  portal->signal_appearance_changed().connect([&](waybar::Appearance appearance) {
+    auto css_file = getStyle(style_path, appearance);
+    setupCss(css_file);
+  });
+}
+
+std::string style_opt;
+
 int waybar::Client::main(int argc, char *argv[]) {
   bool show_help = false;
   bool show_version = false;
   std::string config_opt;
-  std::string style_opt;
   std::string log_level;
   auto cli = clara::detail::Help(show_help) |
              clara::detail::Opt(show_version)["-v"]["--version"]("Show version") |
@@ -262,12 +272,7 @@ int waybar::Client::main(int argc, char *argv[]) {
   if (!portal) {
     portal = std::make_unique<waybar::Portal>();
   }
-  auto css_file = getStyle(style_opt);
-  setupCss(css_file);
-  portal->signal_appearance_changed().connect([&](waybar::Appearance appearance) {
-    auto css_file = getStyle(style_opt, appearance);
-    setupCss(css_file);
-  });
+  loadCss(style_opt);
   bindInterfaces();
   gtk_app->hold();
   gtk_app->run();
@@ -276,7 +281,5 @@ int waybar::Client::main(int argc, char *argv[]) {
 }
 
 void waybar::Client::reset() {
-  gtk_app->quit();
-  // delete signal handler for css changes
-  portal->signal_appearance_changed().clear();
+  loadCss(style_opt);
 }
